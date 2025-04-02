@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>网站导航爬虫工具</title>
+    <style>
+      /* 基本样式 */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Microsoft YaHei", Arial, sans-serif;
+      }
+
+      body {
+        background-color: #f5f7fa;
+        color: #333;
+        line-height: 1.6;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+      }
+
+      h1 {
+        color: #2c3e50;
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .description {
+        color: #7f8c8d;
+        font-size: 16px;
+      }
+
+      /* 表单样式 */
+      .form-container {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      input[type="url"] {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      input[type="url"]:focus {
+        border-color: #3498db;
+        outline: none;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn:disabled {
+        background-color: #95a5a6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* 结果区域样式 */
+      .result-container {
+        margin-top: 30px;
+        display: none;
+      }
+
+      .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .result-title {
+        color: #2c3e50;
+        font-size: 20px;
+      }
+
+      .download-excel {
+        margin-left: 10px;
+      }
+
+      #loading {
+        text-align: center;
+        display: none;
+        margin: 20px 0;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 数据表格样式 */
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .data-table th {
+        background-color: #f2f2f2;
+        text-align: left;
+        padding: 12px;
+        font-weight: bold;
+        color: #2c3e50;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+        vertical-align: middle;
+      }
+
+      .data-table tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      .site-image {
+        max-width: 80px;
+        max-height: 60px;
+        border-radius: 5px;
+        object-fit: contain;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 30px;
+        color: #7f8c8d;
+        font-style: italic;
+      }
+
+      .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+
+      .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>网站导航爬虫工具</h1>
+        <p class="description">
+          输入导航网站链接，一键获取网站标题、链接和图片
+        </p>
+      </header>
+
+      <div class="form-container">
+        <div class="form-group">
+          <label for="site-url">导航网站链接：</label>
+          <input
+            type="url"
+            id="site-url"
+            placeholder="请输入要爬取的导航网站链接"
+            required
+          />
+        </div>
+        <button id="scrape-btn" class="btn">开始爬取</button>
+      </div>
+
+      <div id="message-container"></div>
+
+      <div id="loading">
+        <div class="spinner"></div>
+        <p>正在爬取数据，请稍候...</p>
+      </div>
+
+      <div id="result-container" class="result-container">
+        <div class="result-header">
+          <h2 class="result-title">爬取结果</h2>
+          <button id="download-btn" class="btn download-excel">
+            下载Excel
+          </button>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>网站标题</th>
+              <th>链接地址</th>
+              <th>网站图片</th>
+            </tr>
+          </thead>
+          <tbody id="result-table-body">
+            <!-- 结果将通过JavaScript动态添加 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      // DOM元素
+      const siteUrlInput = document.getElementById("site-url");
+      const scrapeBtn = document.getElementById("scrape-btn");
+      const downloadBtn = document.getElementById("download-btn");
+      const resultContainer = document.getElementById("result-container");
+      const resultTableBody = document.getElementById("result-table-body");
+      const messageContainer = document.getElementById("message-container");
+      const loadingElement = document.getElementById("loading");
+
+      // 当前Excel文件名
+      let currentExcelFile = "";
+
+      // 显示消息
+      function showMessage(message, type = "error") {
+        messageContainer.innerHTML = `
+                <div class="alert alert-${
+                  type === "error" ? "danger" : "success"
+                }">
+                    ${message}
+                </div>
+            `;
+
+        // 5秒后自动隐藏消息
+        setTimeout(() => {
+          messageContainer.innerHTML = "";
+        }, 5000);
+      }
+
+      // 开始爬取
+      scrapeBtn.addEventListener("click", async function () {
+        const url = siteUrlInput.value.trim();
+
+        if (!url) {
+          showMessage("请输入有效的导航网站链接");
+          return;
+        }
+
+        // 显示加载状态
+        loadingElement.style.display = "block";
+        resultContainer.style.display = "none";
+        scrapeBtn.disabled = true;
+
+        try {
+          const response = await fetch("/scrape", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url }),
+          });
+
+          const data = await response.json();
+
+          // 隐藏加载状态
+          loadingElement.style.display = "none";
+          scrapeBtn.disabled = false;
+
+          if (data.success) {
+            // 显示成功消息
+            showMessage(data.message, "success");
+
+            // 保存Excel文件名
+            currentExcelFile = data.excel_file;
+
+            // 清空并填充结果表格
+            resultTableBody.innerHTML = "";
+
+            if (data.data && data.data.length > 0) {
+              data.data.forEach((item) => {
+                const row = document.createElement("tr");
+
+                // 标题单元格
+                const titleCell = document.createElement("td");
+                titleCell.textContent = item.title;
+                row.appendChild(titleCell);
+
+                // 链接单元格
+                const urlCell = document.createElement("td");
+                const linkElement = document.createElement("a");
+                linkElement.href = item.url;
+                linkElement.textContent = item.url;
+                linkElement.target = "_blank";
+                urlCell.appendChild(linkElement);
+                row.appendChild(urlCell);
+
+                // 图片单元格
+                const imageCell = document.createElement("td");
+                if (item.image) {
+                  const imgElement = document.createElement("img");
+                  imgElement.src = `/static/images/${item.image}`;
+                  imgElement.alt = item.title;
+                  imgElement.className = "site-image";
+                  imageCell.appendChild(imgElement);
+                } else {
+                  imageCell.textContent = "无图片";
+                }
+                row.appendChild(imageCell);
+
+                resultTableBody.appendChild(row);
+              });
+            } else {
+              const noDataRow = document.createElement("tr");
+              const noDataCell = document.createElement("td");
+              noDataCell.colSpan = 3;
+              noDataCell.className = "no-data";
+              noDataCell.textContent = "未找到任何数据";
+              noDataRow.appendChild(noDataCell);
+              resultTableBody.appendChild(noDataRow);
+            }
+
+            // 显示结果容器
+            resultContainer.style.display = "block";
+          } else {
+            // 显示错误消息
+            showMessage(data.message);
+          }
+        } catch (error) {
+          console.error("爬取出错:", error);
+          loadingElement.style.display = "none";
+          scrapeBtn.disabled = false;
+          showMessage("爬取过程中发生错误，请重试");
+        }
+      });
+
+      // 下载Excel文件
+      downloadBtn.addEventListener("click", function () {
+        if (currentExcelFile) {
+          window.location.href = `/download/${currentExcelFile}`;
+        } else {
+          showMessage("没有可下载的文件");
+        }
+      });
+    </script>
+  </body>
+</html>
