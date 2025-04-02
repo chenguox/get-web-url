@@ -58,7 +58,8 @@ def process_html_content(html_content, base_url=None):
             img_url = None
             img_tag = image_elem.find('img')
             if img_tag:
-                img_url = img_tag.get('src', '')
+                # 优先使用data-src属性,如果没有则使用src属性
+                img_url = img_tag.get('data-src', '') or img_tag.get('src', '')
                 if base_url and img_url and not img_url.startswith(('http://', 'https://')):
                     img_url = urljoin(base_url, img_url)
             
