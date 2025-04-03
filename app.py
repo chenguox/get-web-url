@@ -48,7 +48,9 @@ def process_html_content(html_content, base_url=None):
         if title_elem and image_elem:
             count += 1
             title = title_elem.text.strip()
-            link_url = link.get('href', '')
+            
+            # 优先使用data-url属性，如果没有则使用href属性
+            link_url = link.get('data-url', '') or link.get('href', '')
             
             # 确保链接是完整的URL
             if base_url and link_url and not link_url.startswith(('http://', 'https://')):
